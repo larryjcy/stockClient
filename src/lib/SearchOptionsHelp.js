@@ -61,7 +61,22 @@ export default {
             startDate: dayjs(),
             endDate: dayjs()
         }
+    },
+
+    statusOptions() {
+        return [
+            {
+                value: 0,
+                label: 'All'
+            },
+            {
+                value: 1,
+                label: 'Active'
+            },
+            {
+                value: 2,
+                label: 'Disable'
+            }
+        ]
     }
-
-
 }

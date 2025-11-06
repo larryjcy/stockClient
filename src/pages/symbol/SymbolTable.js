@@ -20,6 +20,7 @@ import {
 import Select from "@mui/material/Select"
 import MenuItem from "@mui/material/MenuItem"
 import {EditOutlined, PlusOutlined} from '@ant-design/icons'
+import WaterfallChartIcon from '@mui/icons-material/WaterfallChart'
 import IconButton from 'components/@extended/IconButton'
 // third-party
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender, getPaginationRowModel } from '@tanstack/react-table'
@@ -28,17 +29,18 @@ import MainCard from 'components/MainCard'
 import ScrollX from 'components/ScrollX'
 import { TablePagination, HeaderSort } from 'components/third-party/react-table' // HeaderSort
 
-import UsersApi from '../../api/UsersApi'
 import {STATUS_ACTIVE, STATUS_DISABLE} from "../../constants/userConstants"
 import SymbolApi from "../../api/SymbolApi"
-import SymbolHelp from "../../lib/SymbolHelp"
-
+import SearchOptionsHelp from "../../lib/SearchOptionsHelp"
 
 
 const EditAction = ({ row }) => {
     return (
         <Stack direction="row" spacing={1} alignItems="center">
-            <Tooltip title="Edit">
+            <Tooltip title="走势图">
+                <IconButton color="primary" name="edit" component={Link} to={`/chart/${row.original.ticker}`} >
+                    <WaterfallChartIcon />
+                </IconButton>
                 <IconButton color="primary" name="edit" component={Link} to={`/symbol/edit/${row.original.id}`} >
                     <EditOutlined />
                 </IconButton>
@@ -60,7 +62,7 @@ const SymbolTable = () => {
         status: STATUS_ACTIVE
     })
     const [statusFilter, setStatusFilter] = useState(STATUS_ACTIVE)
-    const statusOptions = SymbolHelp.statuses()
+    const statusOptions = SearchOptionsHelp.statusOptions()
 
     const [data, setData] = useState([])
     const [totalPage, setTotalPage] = useState(0)
@@ -82,13 +84,12 @@ const SymbolTable = () => {
                 }
             }
             const results = await SymbolApi.search(filterOptions, sortingOption, offset, pageSize)
-            const total = await UsersApi.findTotal(filterOptions)
-            if (results) {
-                _.forEach(results, result => {
+            if (results?.data) {
+                _.forEach(results.data, result => {
                     result.actionId = result.id
                 })
-                setData(results)
-                setTotalPage(Math.ceil(total / pageSize))
+                setData(results.data)
+                setTotalPage(Math.ceil(results?.totalCount / pageSize))
             }
         } catch (error) {
             console.log(error)
@@ -133,7 +134,7 @@ const SymbolTable = () => {
                 enableSorting: true
             },
             {
-                header: 'Status',
+                header: '关注状态',
                 accessorKey: 'status',
                 cell: ({ getValue }) => (
                     <Stack direction="row" spacing={1.5} alignItems="center">
@@ -200,7 +201,7 @@ const SymbolTable = () => {
                     </Stack>
                 </Stack>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InputLabel sx={{ marginRight: 2 }}>股票状态</InputLabel>
+                    <InputLabel sx={{ marginRight: 2 }}>股票关注状态</InputLabel>
                     <FormControl>
                         <Select
                             labelId="status"

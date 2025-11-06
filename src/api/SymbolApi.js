@@ -61,6 +61,7 @@ export default {
                 limit: limit
             }
             const result = await axiosHttp.post(url, params)
+            console.log(result)
             if (result && result.data) {
                 return {
                     totalCount: parseInt(result.headers['x-total-count']),
