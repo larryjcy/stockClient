@@ -10,4 +10,5 @@ function loadInto(selector, file) {
 // Load shared components
 loadInto("#header", "/components/header.html");
 loadInto("#sidebar", "/components/sidebar.html");
+loadInto("#topNav", "/components/topNav.html");
 loadInto("#footer", "/components/footer.html");
