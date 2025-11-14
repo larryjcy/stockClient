@@ -333,6 +333,16 @@ const deploymentPath = depth === 0 ? './' : '../'.repeat(depth);
                 <p>Simple Tables</p>
               </a>
             </li>
+
+            <li class="nav-item">
+              <a
+                  href={htmlPath + "/symbol/symbols.html"}
+                  class:list={["nav-link", page === "simple" && "active"]}
+              >
+                <i class="nav-icon bi bi-circle"></i>
+                <p>股票清单</p>
+              </a>
+            </li>
           </ul>
         </li>
 

@@ -15,6 +15,7 @@ const pathname = Astro.url.pathname;
 const pathSegments = pathname.split('/').filter(segment => segment !== '');
 const depth = pathSegments.length > 0 ? pathSegments.length - 1 : 0;
 const deploymentPath = depth === 0 ? './' : '../'.repeat(depth);
+console.log(deploymentPath);
 ---
 
 <!doctype html>

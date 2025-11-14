@@ -29,6 +29,11 @@ export default defineConfig({
       watch: {
         ignored: ['!**/dist/**']
       }
+    },
+    resolve: {
+      alias: {
+        '@': '/src'
+      }
     }
   }
 })

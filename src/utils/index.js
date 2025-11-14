@@ -25,4 +25,15 @@ function convertPathToHtml(path) {
   return htmlPath
 }
 
-export { convertPathToHtml }
+const getDeploymentPath = (pathname) => {
+// Only count directories, not the filename itself
+  const pathSegments = pathname.split('/').filter(segment => segment !== '');
+  const depth = pathSegments.length > 0 ? pathSegments.length - 1 : 0;
+  const deploymentPath = depth === 0 ? './' : '../'.repeat(depth);
+  return deploymentPath
+}
+
+export {
+  convertPathToHtml,
+  getDeploymentPath
+}
