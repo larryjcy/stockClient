@@ -59,7 +59,7 @@ $(document).ready(() => {
     function updatePagingButtons() {
         console.log(currentPage);
         if (currentPage <= 1) {
-         //   $('#btnPrev').hide();
+            //   $('#btnPrev').hide();
             $('#btnNext').show();
         } else {
             $('#btnPrev').show();
@@ -117,6 +117,7 @@ $(document).ready(() => {
                 <td>${item.name}</td>
                 <td>${item.sector}</td>
                 <td>${item.industry}</td>
+                <td><a href="/symbol/edit.html?ticker=${item.ticker}" class="btn btn-sm btn-primary editUser" data-id="${item.ticker}">Edit</a></td>
             </tr>
         `);
         });
@@ -149,7 +150,7 @@ $(document).ready(() => {
         console.log(typeof currentPage);
 
         for (let i = startPage; i <= endPage; i++) {
-           // const btn = $(`<button class="btn btn-sm btn-secondary">${i}</button>`);
+            // const btn = $(`<button class="btn btn-sm btn-secondary">${i}</button>`);
             let pagingNumLink = $(`<li class="page-item">
                                         <a class="page-link" pageId="${i}" href="#">${i}</a>
                                     </li>`
@@ -160,7 +161,7 @@ $(document).ready(() => {
                                     </li>`
                 );
             }
-         //   pagingNumLink.click(() => loadSymbols(i));
+            //   pagingNumLink.click(() => loadSymbols(i));
             pagingLink.append(pagingNumLink);
         }
         const nextLink = $(`<li class="page-item">
