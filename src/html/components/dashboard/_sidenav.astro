@@ -92,6 +92,15 @@ const deploymentPath = depth === 0 ? './' : '../'.repeat(depth);
             <p>Theme Generate</p>
           </a>
         </li>
+        <li class="nav-item">
+          <a
+              href={htmlPath + "/symbol/index.html"}
+              class:list={["nav-link", page === "theme-generate" && "active"]}
+          >
+            <i class="nav-icon bi bi-palette"></i>
+            <p>股票清单</p>
+          </a>
+        </li>
         <li class:list={["nav-item", mainPage === "widgets" && "menu-open"]}>
           <a
             href="#"
