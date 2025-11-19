@@ -117,7 +117,10 @@ $(document).ready(() => {
                 <td>${item.name}</td>
                 <td>${item.sector}</td>
                 <td>${item.industry}</td>
-                <td><a href="/symbol/edit.html?ticker=${item.ticker}" class="btn btn-sm btn-primary editUser" data-id="${item.ticker}">Edit</a></td>
+                <td>
+                    <a href="/symbol/chart.html?ticker=${item.ticker}" class="btn btn-sm btn-primary editUser" data-id="${item.ticker}">走势图</a>
+                    <a href="/symbol/edit.html?ticker=${item.ticker}" class="btn btn-sm btn-primary editUser" data-id="${item.ticker}">编辑</a>
+                </td>
             </tr>
         `);
         });

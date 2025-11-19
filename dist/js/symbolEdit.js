@@ -15,7 +15,6 @@ $(document).ready(function() {
    // $('#tickerInput').val(ticker);
 
     async function loadSymbol(ticker) {
-        console.log(`${API_BASE}`)
         const filter = null;
         const sortingOption = null;
         console.log('loadSymbols');

@@ -1,4 +1,5 @@
 async function main(username, password) {
+    const API_BASE = 'http://localhost:4000/api/';
     const response = await axios.post(`${API_BASE}auth/login`, { username, password });
     console.log(response.data);
     return response.data
