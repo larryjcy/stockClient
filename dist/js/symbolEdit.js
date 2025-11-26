@@ -23,8 +23,7 @@ $(document).ready(function() {
         const token = localStorage.getItem("access_token");
         console.log(token)
         if (!token) {
-            // return window.location.href = "/login.html"; // not logged in
-            console.log('not login');
+            return window.location.href = "/login.html"; // not logged in
         }
         try {
             const res = await axios.get(`${API_BASE}symbol/` + ticker,
