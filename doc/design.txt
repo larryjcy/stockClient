@@ -8,3 +8,11 @@ MA60	绿色	#00FF00
 MA90	青色 / 湖蓝 / Cyan	#00FFFF
 MA120	深蓝色	#0000FF
 MA240	白色	#FFFFFF
+
+
+gubi junxian
+buling
+zhouxian
+yuexian
+macd 量化
+斜率

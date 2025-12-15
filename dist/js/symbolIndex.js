@@ -1,13 +1,18 @@
+import {getSectors, getSectorCN, getIndustryMapCNStr} from './general.js';
+
 $(document).ready(() => {
-    console.log('>>>>>>');
+    console.log('>>>>>>' + watch);
     let currentPage = 1;
     let totalPage = 1;
     let offset = 0;
-    let limit = 5;
-    loadSymbols(  0);
+    let limit = 600;
+    const sectorIds = [];
+
+    redenrSector();
+    loadSymbols(  0, '');
 
     async function loadSymbols(offset) {
-        const filter = null;
+        const filter = {};
         const sortingOption = null;
         console.log('loadSymbols');
         const API_BASE = 'http://localhost:4000/api/';
@@ -20,6 +25,16 @@ $(document).ready(() => {
         }
         let filterStr = '{}'
         let sortingstr = '{}'
+        if (sectorIds.length > 0) {
+            filter.sectorIds = sectorIds;
+        }
+        let filterSymbol = $('#filterSymbol').val();
+        if (filterSymbol) {
+            filter.ticker = filterSymbol;
+        }
+        if (watch) {
+            filter.watch = 1;
+        }
         if (filter) {
             filterStr = JSON.stringify(filter)
         }
@@ -115,8 +130,8 @@ $(document).ready(() => {
             <tr>
                 <td>${item.ticker}</td>
                 <td>${item.name}</td>
-                <td>${item.sector}</td>
-                <td>${item.industry}</td>
+                <td>${getSectorCN(item.sector)}</td>
+                <td>${getIndustryMapCNStr(item.industry)}</td>
                 <td>
                     <a href="/symbol/chart.html?ticker=${item.ticker}" class="btn btn-sm btn-primary editUser" data-id="${item.ticker}">走势图</a>
                     <a href="/symbol/edit.html?ticker=${item.ticker}" class="btn btn-sm btn-primary editUser" data-id="${item.ticker}">编辑</a>
@@ -173,4 +188,44 @@ $(document).ready(() => {
         `);
         pagingLink.append(nextLink);
     }
+
+    function redenrSector() {
+        const sectorList = $('#sectorList');
+        const sectors = getSectors();
+        sectors.forEach(item => {
+            sectorList.append(`
+                <div class="col-sm-2">
+                    <div class="form-check">
+                        <input class="form-check-input selectSector" value="${item.en}" type="checkbox">
+                        <label class="form-check-label">${item.cn}</label>
+                    </div>
+                </div>
+            `)
+        });
+    }
+
+    $(document).on('click', '.selectSector', function (e) {
+      //  e.preventDefault();
+        const sectorId = $(this).val();
+        console.log('sectorId:' + sectorId);
+
+        if ($(this).prop('checked')) {
+            console.log('Checked');
+            if (!sectorIds.includes(sectorId)) {
+                sectorIds.push(sectorId);
+            }
+        } else {
+            console.log('Unchecked');
+            const index = sectorIds.indexOf(sectorId);
+            if (index !== -1) {
+                sectorIds.splice(index, 1);
+            }
+        }
+        loadSymbols(0);
+    });
+
+    $(document).on('click', '#submitSearch', function (e) {
+        e.preventDefault();
+        loadSymbols(0);
+    });
 });

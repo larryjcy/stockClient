@@ -6,10 +6,10 @@ import Sidenav from "@components/dashboard/_sidenav.astro"
 import StockSearch from "./symbol_search.astro"
 import Scripts from "@components/_scripts.astro"
 
-const title = "股票清单"
+const title = "股票关注清单"
 const path = "../../../dist"
 const mainPage = "tables"
-const page = "股票清单";
+const page = "股票关注清单";
 
 ---
 
@@ -35,7 +35,7 @@ const page = "股票清单";
                 <!--begin::Row-->
                 <div class="row">
                     <div class="col-sm-6">
-                        <h3 class="mb-0">股票清单</h3>
+                        <h3 class="mb-0">股票关注清单</h3>
                     </div>
                 </div>
                 <!--end::Row-->
@@ -92,6 +92,9 @@ const page = "股票清单";
 <!--begin::Script-->
 <Scripts path={path} />
 <script type="module" src="/dist/js/general.js"></script>
+<script>
+    window.watch = true;
+</script>
 <script type="module" src="/dist/js/symbolIndex.js"></script>
 
 <!--end::Script-->
