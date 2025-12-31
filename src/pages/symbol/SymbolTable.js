@@ -7,6 +7,7 @@ import _ from 'lodash'
 // material-ui
 import {
     // Paper,
+    Grid,
     Table,
     TableBody,
     TableContainer,
@@ -17,13 +18,17 @@ import {
     Box,
     Divider,
     FormControl,
-    Tooltip, Button, Typography, InputLabel
+    Tooltip, Button, Typography, InputLabel,
+    FormControlLabel,
+    Checkbox
 } from '@mui/material'
 import Select from "@mui/material/Select"
 import MenuItem from "@mui/material/MenuItem"
 import {EditOutlined, PlusOutlined} from '@ant-design/icons'
 import WaterfallChartIcon from '@mui/icons-material/WaterfallChart'
 import IconButton from 'components/@extended/IconButton'
+import { DebouncedInput } from '../../components/third-party/react-table'
+
 // third-party
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender, getPaginationRowModel } from '@tanstack/react-table'
 import Breadcrumbs from "../../components/@extended/Breadcrumbs"
@@ -34,7 +39,7 @@ import { TablePagination, HeaderSort } from 'components/third-party/react-table'
 import {STATUS_ACTIVE, STATUS_DISABLE} from "../../constants/userConstants"
 import SymbolApi from "../../api/SymbolApi"
 import SearchOptionsHelp from "../../lib/SearchOptionsHelp"
-
+import SymbolHelp from '../../lib/SymbolHelp'
 
 const EditAction = ({ row }) => {
     return (
@@ -61,7 +66,8 @@ EditAction.propTypes = {
 
 const SymbolTable = () => {
     const [filterOptions, setFilterOptions] = useState({
-        status: STATUS_ACTIVE
+        status: STATUS_ACTIVE,
+        keyword: ''
     })
     const [statusFilter, setStatusFilter] = useState(STATUS_ACTIVE)
     const statusOptions = SearchOptionsHelp.statusOptions()
@@ -71,6 +77,20 @@ const SymbolTable = () => {
     const [sorting, setSorting] = useState([])
 
     const [{ pageIndex, pageSize }, setPagination] = useState({ pageIndex: 0, pageSize: 500 })
+
+    const [selectedSectors, setSelectedSectors] = useState([])
+    const [selectedTags, setSelectedTags]  = useState([])
+
+    const tagList = useMemo(() => {
+        console.log('cal tags')
+        console.log(selectedSectors)
+        const tagTemps = selectedSectors
+            .flatMap(sector => SymbolHelp.sectorTagMap(sector) || [])
+            .filter((tag, index, arr) => arr.indexOf(tag) === index)
+        console.log(tagTemps)
+        return tagTemps
+    }, [selectedSectors]);
+
 
     const getInit = useCallback(async (filterOptions, sorting, pageIndex, pageSize) => {
         const offset = pageIndex * pageSize
@@ -108,7 +128,49 @@ const SymbolTable = () => {
         setFilterOptions(temp)
         setStatusFilter(event.target.value)
     }
-    
+
+    const handleSectorChange = (sector, checked) => {
+        setSelectedSectors(prev => {
+            const nextSectors = checked
+                ? prev.includes(sector) ? prev : [...prev, sector]
+                : prev.filter(s => s !== sector)
+
+            // ✅ update filterOptions with NEW object
+            setFilterOptions(prevOptions => ({
+                ...prevOptions,
+                sectors: nextSectors
+            }))
+            selectedSectors
+                .flatMap(sector => SymbolHelp.sectorTagMap[sector] || [])
+                .filter((tag, index, arr) => arr.indexOf(tag) === index);
+            return nextSectors
+        })
+
+    }
+
+    const handleTagChange = (tag, checked) => {
+        setSelectedTags(prev => {
+            const nextTags = checked
+                ? prev.includes(tag) ? prev : [...prev, tag]
+                : prev.filter(s => s !== tag)
+
+            // ✅ update filterOptions with NEW object
+            setFilterOptions(prevOptions => ({
+                ...prevOptions,
+                tags: nextTags
+            }))
+
+            return nextTags
+        })
+    }
+
+    const handleFieldChange = (field, value) => {
+        setFilterOptions(prev => {
+            const next = { ...(prev ?? {}), [field]: value }
+            return next
+        })
+    }
+
     const pagination = useMemo(
         () => ({
             pageIndex,
@@ -155,7 +217,7 @@ const SymbolTable = () => {
                 enableSorting: true
             },
             {
-                header: 'Action',
+                header: '动作',
                 id: 'listAction',
                 cell: EditAction,
                 meta: {
@@ -202,24 +264,77 @@ const SymbolTable = () => {
                         </Button>
                     </Stack>
                 </Stack>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InputLabel sx={{ marginRight: 2 }}>股票关注状态</InputLabel>
-                    <FormControl>
-                        <Select
-                            labelId="status"
-                            id="status"
-                            value={statusFilter}
-                            label=''
-                            sx={{ marginLeft: 1 }}
-                            onChange={handleStatusFilter}
-                        >
-                            {statusOptions.map((statusOption) => (
-                                <MenuItem key={'filter_status' + statusOption.value} value={statusOption.value}>{statusOption.label}</MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                </Box>
-
+                <Stack direction="row" spacing={2} alignItems="right" justifyContent="space-between" sx={{ padding: 2 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                        <Grid item xs={12} sm={6} md={4}>
+                            <InputLabel sx={{ marginRight: 2 }}>关键字查询</InputLabel>
+                            <DebouncedInput
+                               // variant="outlined"
+                                size="small"
+                               // label="关键字"
+                                name="keyword"
+                                value={filterOptions?.keyword ?? ''}
+                                onFilterChange={(value) => handleFieldChange('keyword', value)}
+                                placeholder="关键字"
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={4}>
+                            <InputLabel sx={{ marginRight: 2 }}>股票关注状态</InputLabel>
+                            <FormControl>
+                                <Select
+                                    labelId="status"
+                                    id="status"
+                                    value={statusFilter}
+                                    label=''
+                                    sx={{ marginLeft: 1 }}
+                                    onChange={handleStatusFilter}
+                                >
+                                    {statusOptions.map((statusOption) => (
+                                        <MenuItem key={'filter_status' + statusOption.value} value={statusOption.value}>{statusOption.label}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                    </Stack>
+                </Stack>
+                <Stack direction="row" spacing={2} alignItems="right" justifyContent="space-between" sx={{ padding: 2 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                        <InputLabel sx={{ marginRight: 2 }}>分类</InputLabel>
+                        {SymbolHelp.getSectors().map((sector) => (
+                            <FormControlLabel
+                                key={sector} // ✅ REQUIRED
+                                control={
+                                    <Checkbox
+                                        checked={selectedSectors.includes(sector)}
+                                        onChange={(e) => handleSectorChange(sector, e.target.checked)}
+                                    />
+                                }
+                                label={sector}
+                                labelPlacement="end"
+                            />
+                        ))}
+                    </Stack>
+                </Stack>
+                {selectedSectors.map(sector => (
+                <Stack direction="row" spacing={1} alignItems="right" justifyContent="space-between" sx={{ padding: 1 }}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                        <InputLabel sx={{ marginRight: 2 }}>{sector}:</InputLabel>
+                        {SymbolHelp.sectorTagMap(sector).map(tag => (
+                            <FormControlLabel
+                                key={tag} // ✅ REQUIRED
+                                control={
+                                    <Checkbox
+                                        checked={selectedTags.includes(tag)}
+                                        onChange={(e) => handleTagChange(tag, e.target.checked)}
+                                    />
+                                }
+                                label={tag}
+                                labelPlacement="end"
+                            />
+                        ))}
+                    </Stack>
+                </Stack>
+                ))}
                 <ScrollX>
                     <Stack>
                         <TableContainer>
@@ -278,7 +393,7 @@ const SymbolTable = () => {
                                     setPageIndex: table.setPageIndex,
                                     getState: table.getState,
                                     getPageCount: table.getPageCount,
-                                    initialPageSize: 50
+                                    initialPageSize: 500
                                 }}
                             />
                         </Box>

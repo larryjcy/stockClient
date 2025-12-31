@@ -98,28 +98,7 @@ const SymbolEdit = () => {
                             <Grid container spacing={3}>
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
-                                        <InputLabel htmlFor="nickname-edit">股票名称</InputLabel>
-                                        <OutlinedInput
-                                            id="ticker-edit"
-                                            type="text"
-                                            value={values.ticker}
-                                            name="ticker"
-                                            onBlur={handleBlur}
-                                            onChange={handleChange}
-                                            placeholder="输入股票名称"
-                                            fullWidth
-                                            error={Boolean(touched.ticker && errors.ticker)}
-                                        />
-                                        {touched.ticker && errors.ticker && (
-                                            <FormHelperText error id="standard-weight-helper-text-ticker-edit">
-                                                {errors.ticker}
-                                            </FormHelperText>
-                                        )}
-                                    </Stack>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Stack spacing={1}>
-                                        <InputLabel htmlFor="ticker-edit">Ticker</InputLabel>
+                                        <InputLabel htmlFor="ticker-edit">代码</InputLabel>
                                         <OutlinedInput
                                             id="ticker-edit"
                                             type="text"
@@ -140,7 +119,7 @@ const SymbolEdit = () => {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
-                                        <InputLabel htmlFor="name-edit">Name</InputLabel>
+                                        <InputLabel htmlFor="name-edit">名称</InputLabel>
                                         <OutlinedInput
                                             id="name-edit"
                                             type="text"
@@ -148,7 +127,7 @@ const SymbolEdit = () => {
                                             name="name"
                                             onBlur={handleBlur}
                                             onChange={handleChange}
-                                            placeholder="Enter Name"
+                                            placeholder="输入股票名称"
                                             fullWidth
                                             error={Boolean(touched.name && errors.name)}
                                         />
@@ -159,9 +138,11 @@ const SymbolEdit = () => {
                                         )}
                                     </Stack>
                                 </Grid>
+
+
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
-                                        <InputLabel htmlFor="exchange-edit">Exchange</InputLabel>
+                                        <InputLabel htmlFor="exchange-edit">交易所</InputLabel>
                                         <OutlinedInput
                                             id="exchange-edit"
                                             type="exchange"
@@ -182,7 +163,7 @@ const SymbolEdit = () => {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
-                                        <InputLabel htmlFor="sector-edit">Sector</InputLabel>
+                                        <InputLabel htmlFor="sector-edit">分类</InputLabel>
                                         <OutlinedInput
                                             id="sector-edit"
                                             type="text"
@@ -203,7 +184,7 @@ const SymbolEdit = () => {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
-                                        <InputLabel htmlFor="industry-edit">Industry</InputLabel>
+                                        <InputLabel htmlFor="industry-edit">行业</InputLabel>
                                         <OutlinedInput
                                             id="industry-edit"
                                             type="text"
@@ -225,29 +206,29 @@ const SymbolEdit = () => {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
-                                        <InputLabel htmlFor="market_cap-edit">Market Cap</InputLabel>
+                                        <InputLabel htmlFor="marketCap-edit">市值</InputLabel>
                                         <OutlinedInput
-                                            id="market_cap-edit"
+                                            id="marketCap-edit"
                                             type="text"
-                                            value={values.market_cap}
-                                            name="market_cap"
+                                            value={values.marketCap}
+                                            name="marketCap"
                                             onBlur={handleBlur}
                                             onChange={handleChange}
-                                            placeholder="Enter market cap"
+                                            placeholder="Enter 市值"
                                             fullWidth
                                             autoComplete="off"
-                                            error={Boolean(touched.market_cap && errors.market_cap)}
+                                            error={Boolean(touched.marketCap && errors.marketCap)}
                                         />
-                                        {touched.market_cap && errors.market_cap && (
-                                            <FormHelperText error id="standard-weight-helper-text-market_cap-edit">
-                                                {errors.market_cap}
+                                        {touched.marketCap && errors.marketCap && (
+                                            <FormHelperText error id="standard-weight-helper-text-marketCap-edit">
+                                                {errors.marketCap}
                                             </FormHelperText>
                                         )}
                                     </Stack>
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
-                                        <InputLabel id="status-label">Select Status</InputLabel>
+                                        <InputLabel id="status-label">状态</InputLabel>
                                         <Select id="status"
                                                 name="status"
                                                 value={statusOptions.length > 0 ? values.status : ''}
@@ -270,7 +251,7 @@ const SymbolEdit = () => {
                                     <Grid item xs={12}>
                                         <Stack direction="row" spacing={4} justifyContent="left" alignItems="center">
                                             <Button variant="contained" type="submit" size="medium" sx={{ textTransform: 'none' }}>
-                                                Save
+                                                保存
                                             </Button>
                                         </Stack>
                                     </Grid>
