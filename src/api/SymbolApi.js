@@ -1,5 +1,6 @@
 import axiosHttp from './axiosHttp'
 import util from "../utils/util"
+import SymbolHelp from "../lib/SymbolHelp";
 export default {
     async create(client) {
         if (client.dob) {
@@ -47,6 +48,11 @@ export default {
         let filterStr = '{}'
         let sortingstr = '{}'
         if (filter) {
+            if (filter?.tags) {
+                const tags = SymbolHelp.normalizeTagsBySectors(filter?.sectors, filter?.tags);
+                filter.tags = tags
+                console.log(tags)
+            }
             filterStr = JSON.stringify(filter)
         }
         if (sortingOption) {

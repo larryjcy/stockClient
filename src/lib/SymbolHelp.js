@@ -141,5 +141,21 @@ export default {
         }
         console.log( tags?.[sector])
         return tags?.[sector] || [];
+    },
+
+    normalizeTagsBySectors(sectors, tags) {
+        console.log('sectors:', sectors);
+        console.log('tags:', tags);
+
+        // ✅ 正确调用方式
+       // console.log(this.sectorTagMap('健康'));
+
+        const allowedTags = new Set(
+            sectors.flatMap(sector => this.sectorTagMap(sector))
+        );
+
+        console.log('allowedTags:', allowedTags);
+
+        return tags.filter(tag => allowedTags.has(tag));
     }
 }
