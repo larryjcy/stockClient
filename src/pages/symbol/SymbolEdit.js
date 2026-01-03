@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { Formik } from 'formik'
 // material-ui
 import {
-    Button,
+    Button, Checkbox, FormControlLabel,
     FormHelperText,
     Grid,
     InputLabel, MenuItem,
@@ -22,28 +22,45 @@ import Breadcrumbs from 'components/@extended/Breadcrumbs'
 import {displayMultiError} from "../../lib/help"
 import SymbolApi from "../../api/SymbolApi"
 import SearchOptionsHelp from "../../lib/SearchOptionsHelp"
+import SymbolHelp from "../../lib/SymbolHelp";
 
 const SymbolEdit = () => {
-    const { id } = useParams()
+    const { ticker } = useParams()
     const navigate = useNavigate()
 
     const [symbol, setSymbol] = useState(null)
+    const [tags, setTags] = useState([])
+    const [selectedTags, setSelectedTags]  = useState([])
+
     const statusOptions = SearchOptionsHelp.statusOptions()
 
     const getInit = useCallback(async () => {
         try {
-            let data = await SymbolApi.detail(id)
+            let data = await SymbolApi.detail(ticker)
             if (data) {
                 setSymbol(data)
+                if (data?.sector) {
+                    setTags(SymbolHelp.sectorTagMap(data?.sector))
+                }
             }
         } catch (error) {
             console.log(error)
         }
-    }, [id])
+    }, [ticker])
 
     useEffect(() => {
         getInit()
     }, [getInit])
+
+    const handleTagChange = (tag, checked) => {
+        setSelectedTags(prev => {
+            const nextTags = checked
+                ? prev.includes(tag) ? prev : [...prev, tag]
+                : prev.filter(s => s !== tag)
+
+            return nextTags
+        })
+    }
 
     return (
         <>
@@ -68,16 +85,16 @@ const SymbolEdit = () => {
                         const data = {
                             ...values
                         }
-
-                        let response = await SymbolApi.update(id, data)
+                        data.tags = selectedTags;
+                        let response = await SymbolApi.update(symbol.id, data)
                         if (response && response.status == 200) {
-                            enqueueSnackbar('User update success!', {
+                            enqueueSnackbar('更新成功!', {
                                 variant: 'success',
                                 autoHideDuration: 3000,
                                 anchorOrigin: {horizontal: 'right', vertical: 'top'}
                             })
                             setTimeout(() => {
-                                navigate('/users')
+                                navigate('/symbol')
                             }, 2000)
                         } else {
                             response = displayMultiError(response)
@@ -228,7 +245,7 @@ const SymbolEdit = () => {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
-                                        <InputLabel id="status-label">状态</InputLabel>
+                                        <InputLabel id="status-label">系统追踪</InputLabel>
                                         <Select id="status"
                                                 name="status"
                                                 value={statusOptions.length > 0 ? values.status : ''}
@@ -238,6 +255,49 @@ const SymbolEdit = () => {
                                                 <MenuItem key={'statusOption' + statusOption.value} value={statusOption.value}>{statusOption.label}</MenuItem>
                                             )}
                                         </Select>
+                                    </Stack>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Stack spacing={1}>
+                                        <InputLabel htmlFor="company">公司简介</InputLabel>
+                                        <OutlinedInput
+                                            id="company"
+                                            type="text"
+                                            value={symbol?.Company?.content}
+                                            name="company"
+                                            inputProps={{'data-testid': 'note'}}
+                                            onChange={handleChange}
+                                            placeholder="公司简介"
+                                            multiline={true}
+                                            rows={4}
+                                            fullWidth
+                                            error={Boolean(touched.note && errors.note)}
+                                        />
+                                        {touched.company && errors.company && (
+                                            <FormHelperText error id="standard-weight-helper-text-company">
+                                                {errors.company}
+                                            </FormHelperText>
+                                        ) }
+                                    </Stack>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Stack direction="row" spacing={1} alignItems="right" justifyContent="space-between" sx={{ padding: 1 }}>
+                                        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                                            <InputLabel id="status-label">标签</InputLabel>
+                                            {tags?.map(tag => (
+                                                <FormControlLabel
+                                                    key={tag} // ✅ REQUIRED
+                                                    control={
+                                                        <Checkbox
+                                                            checked={selectedTags.includes(tag)}
+                                                            onChange={(e) => handleTagChange(tag, e.target.checked)}
+                                                        />
+                                                    }
+                                                    label={tag}
+                                                    labelPlacement="end"
+                                                />
+                                            ))}
+                                        </Stack>
                                     </Stack>
                                 </Grid>
                                 {errors.submit && (

@@ -24,7 +24,7 @@ const CategoryEdit = Loadable(lazy(() => import('pages/category/CategoryEdit')))
 
 const TradingViewWidget = Loadable(lazy(() => import('pages/chart/TradingViewWidget')))
 const Chart = Loadable(lazy(() => import('pages/chart/Chart')))
-
+const TradingViewChart = Loadable(lazy(() => import('pages/tradeView/index')))
 
 const AuthLogout = Loadable(lazy(() => import('pages/auth/Logout')))
 const Error404 = Loadable(lazy(() => import('pages/general/Error404')))
@@ -61,12 +61,16 @@ const MainRoutes = {
       element: <AuthGuard navId={'user'} component={<SymbolDetail />} />
     },
     {
-      path: 'symbol/edit/:id',
+      path: 'symbol/edit/:ticker',
       element: <AuthGuard navId={'user'} component={<SymbolEdit />} />
     },
      {
       path: 'symbol/create',
       element: <AuthGuard navId={'user'} component={<SymbolCreate />} />
+    },
+    {
+      path: 'tradeView/:exchange/:ticker',
+      element: <AuthGuard navId={'user'} component={<TradingViewChart />} />
     },
     {
       path: 'categories',

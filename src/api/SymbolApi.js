@@ -2,28 +2,17 @@ import axiosHttp from './axiosHttp'
 import util from "../utils/util"
 import SymbolHelp from "../lib/SymbolHelp";
 export default {
-    async create(client) {
-        if (client.dob) {
-            client.dob = util.getDayValue(client.dob)
-        } else {
-            client.dob = null
-        }
+    async create(symbol) {
 
         try {
-            const url = '/client'
-            return await axiosHttp.post(url, client)
+            const url = '/symbol'
+            return await axiosHttp.post(url, symbol)
         } catch (error) {
             return error.response.data
         }
     },
 
     async update(id, symbol) {
-        if (symbol.dob) {
-            symbol.dob = util.getDateTimeStampValue(symbol.dob)
-        } else {
-            symbol.dob = null
-        }
-
         try {
             const url = '/symbol/' + id
             const result = await axiosHttp.put(url, symbol)
@@ -34,9 +23,9 @@ export default {
         }
     },
 
-    async detail(id){
+    async detail(ticker){
         try {
-            const url = '/symbol/' + id
+            const url = '/symbol/ticker/' + ticker
             const result = await axiosHttp.get(url)
             return result.data
         } catch (error) {

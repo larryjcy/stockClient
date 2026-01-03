@@ -25,7 +25,8 @@ import {
 import Select from "@mui/material/Select"
 import MenuItem from "@mui/material/MenuItem"
 import {EditOutlined, PlusOutlined} from '@ant-design/icons'
-import WaterfallChartIcon from '@mui/icons-material/WaterfallChart'
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
 import IconButton from 'components/@extended/IconButton'
 import { DebouncedInput } from '../../components/third-party/react-table'
 
@@ -44,11 +45,18 @@ import SymbolHelp from '../../lib/SymbolHelp'
 const EditAction = ({ row }) => {
     return (
         <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip title="Trade View 图">
+                <IconButton color="primary" name="chart" component={Link} to={`/tradeView/${row.original.exchange}/${row.original.ticker}`} >
+                    <QueryStatsIcon />
+                </IconButton>
+            </Tooltip>
             <Tooltip title="走势图">
                 <IconButton color="primary" name="chart" component={Link} to={`/chart/${row.original.ticker}`} >
-                    <WaterfallChartIcon />
+                    <ShowChartIcon />
                 </IconButton>
-                <IconButton color="primary" name="edit" component={Link} to={`/symbol/edit/${row.original.id}`} >
+            </Tooltip>
+            <Tooltip title="编辑">
+                <IconButton color="primary" name="edit" component={Link} to={`/symbol/edit/${row.original.ticker}`} >
                     <EditOutlined />
                 </IconButton>
             </Tooltip>
@@ -69,7 +77,7 @@ const SymbolTable = () => {
         status: STATUS_ACTIVE,
         keyword: ''
     })
-    const [statusFilter, setStatusFilter] = useState(STATUS_ACTIVE)
+   // const [statusFilter, setStatusFilter] = useState(STATUS_ACTIVE)
     const statusOptions = SearchOptionsHelp.statusOptions()
 
     const [data, setData] = useState([])
@@ -120,13 +128,17 @@ const SymbolTable = () => {
 
     useEffect(() => {
         getInit(filterOptions, sorting, pageIndex, pageSize)
-    }, [getInit, filterOptions, statusFilter, sorting, pageIndex, pageSize])
+    }, [getInit, filterOptions, sorting, pageIndex, pageSize])
 
     const handleStatusFilter = (event) => {
-        let temp = filterOptions
-        temp.status = event.target.value
-        setFilterOptions(temp)
-        setStatusFilter(event.target.value)
+        // let temp = filterOptions
+        // temp.status = event.target.value
+        // setFilterOptions(temp)
+       // setStatusFilter(event.target.value)
+        setFilterOptions(prevOptions => ({
+            ...prevOptions,
+            status: event.target.value
+        }))
     }
 
     const handleSectorChange = (sector, checked) => {
@@ -284,7 +296,7 @@ const SymbolTable = () => {
                                 <Select
                                     labelId="status"
                                     id="status"
-                                    value={statusFilter}
+                                    value={filterOptions?.status}
                                     label=''
                                     sx={{ marginLeft: 1 }}
                                     onChange={handleStatusFilter}

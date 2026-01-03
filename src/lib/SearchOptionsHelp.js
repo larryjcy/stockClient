@@ -67,15 +67,15 @@ export default {
         return [
             {
                 value: 0,
-                label: 'All'
+                label: '显示所有'
             },
             {
                 value: 1,
-                label: 'Active'
+                label: '激活'
             },
             {
                 value: 2,
-                label: 'Disable'
+                label: '停止'
             }
         ]
     }
