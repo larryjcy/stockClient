@@ -28,6 +28,7 @@ import {EditOutlined, PlusOutlined} from '@ant-design/icons'
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import IconButton from 'components/@extended/IconButton'
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import { DebouncedInput } from '../../components/third-party/react-table'
 
 // third-party
@@ -36,41 +37,15 @@ import Breadcrumbs from "../../components/@extended/Breadcrumbs"
 import MainCard from 'components/MainCard'
 import ScrollX from 'components/ScrollX'
 import { TablePagination, HeaderSort } from 'components/third-party/react-table' // HeaderSort
+import { SnackbarProvider, enqueueSnackbar } from 'notistack'
 
+import AddEventDialog from "./AddEventDialog";
 import {STATUS_ACTIVE, STATUS_DISABLE} from "../../constants/userConstants"
 import SymbolApi from "../../api/SymbolApi"
 import SearchOptionsHelp from "../../lib/SearchOptionsHelp"
 import SymbolHelp from '../../lib/SymbolHelp'
+import SymbolEventApi from "../../api/SymbolEventApi";
 
-const EditAction = ({ row }) => {
-    return (
-        <Stack direction="row" spacing={1} alignItems="center">
-            <Tooltip title="Trade View 图">
-                <IconButton color="primary" name="chart" component={Link} to={`/tradeView/${row.original.exchange}/${row.original.ticker}`} >
-                    <QueryStatsIcon />
-                </IconButton>
-            </Tooltip>
-            <Tooltip title="走势图">
-                <IconButton color="primary" name="chart" component={Link} to={`/chart/${row.original.ticker}`} >
-                    <ShowChartIcon />
-                </IconButton>
-            </Tooltip>
-            <Tooltip title="编辑">
-                <IconButton color="primary" name="edit" component={Link} to={`/symbol/edit/${row.original.ticker}`} >
-                    <EditOutlined />
-                </IconButton>
-            </Tooltip>
-        </Stack>
-    )
-}
-
-EditAction.propTypes = {
-    row: PropTypes.object,
-    table: PropTypes.object,
-    options: PropTypes.array,
-    id: PropTypes.number,
-    index: PropTypes.number
-}
 
 const SymbolTable = () => {
     const [filterOptions, setFilterOptions] = useState({
@@ -89,16 +64,8 @@ const SymbolTable = () => {
     const [selectedSectors, setSelectedSectors] = useState([])
     const [selectedTags, setSelectedTags]  = useState([])
 
-    const tagList = useMemo(() => {
-        console.log('cal tags')
-        console.log(selectedSectors)
-        const tagTemps = selectedSectors
-            .flatMap(sector => SymbolHelp.sectorTagMap(sector) || [])
-            .filter((tag, index, arr) => arr.indexOf(tag) === index)
-        console.log(tagTemps)
-        return tagTemps
-    }, [selectedSectors]);
-
+    const [currentTicker, setCurrentTicker] = useState(null)
+    const [addEventOpen, setAddEventOpen] = useState(false)
 
     const getInit = useCallback(async (filterOptions, sorting, pageIndex, pageSize) => {
         const offset = pageIndex * pageSize
@@ -183,6 +150,22 @@ const SymbolTable = () => {
         })
     }
 
+    const handleShowAddEvent = (ticker) => {
+        console.log(ticker)
+        setCurrentTicker(ticker)
+        setAddEventOpen(true)
+    }
+
+    const handleCloseAddEvent = () => {
+        setCurrentTicker(null)
+        setAddEventOpen(false)
+        enqueueSnackbar('成功保存!', {
+            variant: 'success',
+            autoHideDuration: 3000,
+            anchorOrigin: {horizontal: 'right', vertical: 'top'}
+        })
+    }
+
     const pagination = useMemo(
         () => ({
             pageIndex,
@@ -231,7 +214,32 @@ const SymbolTable = () => {
             {
                 header: '动作',
                 id: 'listAction',
-                cell: EditAction,
+                cell: ({ row }) => {
+                    return (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <Tooltip title="Trade View 图">
+                                <IconButton color="primary" name="chart" component={Link} to={`/tradeView/${row.original.exchange}/${row.original.ticker}`} >
+                                    <QueryStatsIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="走势图">
+                                <IconButton color="primary" name="chart" component={Link} to={`/chart/${row.original.ticker}`} >
+                                    <ShowChartIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="标注">
+                                <IconButton color="primary" name="eventSymbol"  onClick = {() => handleShowAddEvent(row.original.ticker)} >
+                                    <EditNoteIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="编辑">
+                                <IconButton color="primary" name="edit" component={Link} to={`/symbol/edit/${row.original.ticker}`} >
+                                    <EditOutlined />
+                                </IconButton>
+                            </Tooltip>
+                        </Stack>
+                    )
+                },
                 meta: {
                     className: 'cell-right'
                 }
@@ -331,9 +339,9 @@ const SymbolTable = () => {
                 <Stack direction="row" spacing={1} alignItems="right" justifyContent="space-between" sx={{ padding: 1 }}>
                     <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
                         <InputLabel sx={{ marginRight: 2 }}>{sector}:</InputLabel>
-                        {SymbolHelp.sectorTagMap(sector).map(tag => (
+                        {SymbolHelp.sectorTagMap(sector).map((tag, index) => (
                             <FormControlLabel
-                                key={tag} // ✅ REQUIRED
+                                key={tag + '-' + index} // ✅ REQUIRED
                                 control={
                                     <Checkbox
                                         checked={selectedTags.includes(tag)}
@@ -413,6 +421,14 @@ const SymbolTable = () => {
                     </Stack>
                 </ScrollX>
             </MainCard>
+            <SnackbarProvider />
+            {(addEventOpen && currentTicker) &&
+                <AddEventDialog
+                    ticker={currentTicker}
+                    open={addEventOpen}
+                    handleCloseAddEvent={handleCloseAddEvent}
+                />
+            }
         </>
     )
 }

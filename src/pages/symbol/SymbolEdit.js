@@ -21,6 +21,7 @@ import Breadcrumbs from 'components/@extended/Breadcrumbs'
 
 import {displayMultiError} from "../../lib/help"
 import SymbolApi from "../../api/SymbolApi"
+import SymbolEventApi from "../../api/SymbolEventApi";
 import SearchOptionsHelp from "../../lib/SearchOptionsHelp"
 import SymbolHelp from "../../lib/SymbolHelp";
 
@@ -79,6 +80,8 @@ const SymbolEdit = () => {
                         priority: symbol.priority,
                         status: symbol.status,
                         volume: symbol.volume,
+                        content: symbol?.Company?.content,
+                        note: symbol?.Company?.note,
                         submit: null
                     }}
                     onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
@@ -86,16 +89,26 @@ const SymbolEdit = () => {
                             ...values
                         }
                         data.tags = selectedTags;
+                        data.company = {
+                            content: values.content,
+                            note: values.note
+                        }
+                        console.log(data)
                         let response = await SymbolApi.update(symbol.id, data)
+                        const eventData = {
+                            ticker: symbol.ticker,
+                            note: values.note
+                        }
+
                         if (response && response.status == 200) {
                             enqueueSnackbar('更新成功!', {
                                 variant: 'success',
                                 autoHideDuration: 3000,
                                 anchorOrigin: {horizontal: 'right', vertical: 'top'}
                             })
-                            setTimeout(() => {
-                                navigate('/symbol')
-                            }, 2000)
+                            // setTimeout(() => {
+                            //     navigate('/symbol')
+                            // }, 2000)
                         } else {
                             response = displayMultiError(response)
                             setStatus({success: false})
@@ -263,7 +276,7 @@ const SymbolEdit = () => {
                                         <OutlinedInput
                                             id="company"
                                             type="text"
-                                            value={symbol?.Company?.content}
+                                            value={values.content}
                                             name="company"
                                             inputProps={{'data-testid': 'note'}}
                                             onChange={handleChange}
@@ -271,11 +284,34 @@ const SymbolEdit = () => {
                                             multiline={true}
                                             rows={4}
                                             fullWidth
-                                            error={Boolean(touched.note && errors.note)}
+                                            error={Boolean(touched.company && errors.company)}
                                         />
                                         {touched.company && errors.company && (
                                             <FormHelperText error id="standard-weight-helper-text-company">
                                                 {errors.company}
+                                            </FormHelperText>
+                                        ) }
+                                    </Stack>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Stack spacing={1}>
+                                        <InputLabel htmlFor="note">标注</InputLabel>
+                                        <OutlinedInput
+                                            id="note"
+                                            type="text"
+                                            value={values.note}
+                                            name="note"
+                                            inputProps={{'data-testid': 'note'}}
+                                            onChange={handleChange}
+                                            placeholder="标注"
+                                            multiline={true}
+                                            rows={4}
+                                            fullWidth
+                                            error={Boolean(touched.note && errors.note)}
+                                        />
+                                        {touched.note && errors.note && (
+                                            <FormHelperText error id="standard-weight-helper-text-note">
+                                                {errors.note}
                                             </FormHelperText>
                                         ) }
                                     </Stack>
