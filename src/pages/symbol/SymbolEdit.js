@@ -81,7 +81,6 @@ const SymbolEdit = () => {
                         status: symbol.status,
                         volume: symbol.volume,
                         content: symbol?.Company?.content,
-                        note: symbol?.Company?.note,
                         submit: null
                     }}
                     onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
@@ -91,14 +90,8 @@ const SymbolEdit = () => {
                         data.tags = selectedTags;
                         data.company = {
                             content: values.content,
-                            note: values.note
                         }
-                        console.log(data)
                         let response = await SymbolApi.update(symbol.id, data)
-                        const eventData = {
-                            ticker: symbol.ticker,
-                            note: values.note
-                        }
 
                         if (response && response.status == 200) {
                             enqueueSnackbar('更新成功!', {
@@ -293,29 +286,7 @@ const SymbolEdit = () => {
                                         ) }
                                     </Stack>
                                 </Grid>
-                                <Grid item xs={12}>
-                                    <Stack spacing={1}>
-                                        <InputLabel htmlFor="note">标注</InputLabel>
-                                        <OutlinedInput
-                                            id="note"
-                                            type="text"
-                                            value={values.note}
-                                            name="note"
-                                            inputProps={{'data-testid': 'note'}}
-                                            onChange={handleChange}
-                                            placeholder="标注"
-                                            multiline={true}
-                                            rows={4}
-                                            fullWidth
-                                            error={Boolean(touched.note && errors.note)}
-                                        />
-                                        {touched.note && errors.note && (
-                                            <FormHelperText error id="standard-weight-helper-text-note">
-                                                {errors.note}
-                                            </FormHelperText>
-                                        ) }
-                                    </Stack>
-                                </Grid>
+
                                 <Grid item xs={12}>
                                     <Stack direction="row" spacing={1} alignItems="right" justifyContent="space-between" sx={{ padding: 1 }}>
                                         <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
