@@ -46,7 +46,6 @@ import SearchOptionsHelp from "../../lib/SearchOptionsHelp"
 import SymbolHelp from '../../lib/SymbolHelp'
 import SymbolEventApi from "../../api/SymbolEventApi";
 
-
 const SymbolTable = () => {
     const [filterOptions, setFilterOptions] = useState({
         status: STATUS_ACTIVE,
@@ -200,10 +199,10 @@ const SymbolTable = () => {
                         <Stack spacing={0}>
                             <Typography variant="subtitle1">
                                 {(getValue() === STATUS_ACTIVE) &&
-                                    <>Active</>
+                                    <>激活</>
                                 }
                                 {(getValue() === STATUS_DISABLE) &&
-                                    <>Disable</>
+                                    <>停止</>
                                 }
                             </Typography>
                         </Stack>
@@ -309,8 +308,8 @@ const SymbolTable = () => {
                                     sx={{ marginLeft: 1 }}
                                     onChange={handleStatusFilter}
                                 >
-                                    {statusOptions.map((statusOption) => (
-                                        <MenuItem key={'filter_status' + statusOption.value} value={statusOption.value}>{statusOption.label}</MenuItem>
+                                    {statusOptions.map((statusOption, index) => (
+                                        <MenuItem key={'filter_status' + index} value={statusOption.value}>{statusOption.label}</MenuItem>
                                     ))}
                                 </Select>
                             </FormControl>
@@ -320,9 +319,9 @@ const SymbolTable = () => {
                 <Stack direction="row" spacing={2} alignItems="right" justifyContent="space-between" sx={{ padding: 2 }}>
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap' }}>
                         <InputLabel sx={{ marginRight: 2 }}>分类</InputLabel>
-                        {SymbolHelp.getSectors().map((sector) => (
+                        {SymbolHelp.getSectors().map((sector, index) => (
                             <FormControlLabel
-                                key={sector} // ✅ REQUIRED
+                                key={sector + '-' + index} // ✅ REQUIRED
                                 control={
                                     <Checkbox
                                         checked={selectedSectors.includes(sector)}

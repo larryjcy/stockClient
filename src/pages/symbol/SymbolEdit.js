@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 
 // third party
 import { Formik } from 'formik'
+import { useFormikContext } from 'formik'
+
 // material-ui
 import {
     Button, Checkbox, FormControlLabel,
@@ -25,6 +27,18 @@ import SymbolEventApi from "../../api/SymbolEventApi";
 import SearchOptionsHelp from "../../lib/SearchOptionsHelp"
 import SymbolHelp from "../../lib/SymbolHelp";
 
+function SectorEditWatcher({ setAvailableTags }) {
+    const { values, setFieldValue } = useFormikContext()
+
+    useEffect(() => {
+        const tags = SymbolHelp.sectorTagMap(values.sector) || []
+        setAvailableTags(tags)
+        setFieldValue('tags', [])
+    }, [values.sector])
+
+    return null
+}
+
 const SymbolEdit = () => {
     const { ticker } = useParams()
     const navigate = useNavigate()
@@ -32,8 +46,9 @@ const SymbolEdit = () => {
     const [symbol, setSymbol] = useState(null)
     const [tags, setTags] = useState([])
     const [selectedTags, setSelectedTags]  = useState([])
-
+    const sectorOptions = SymbolHelp.getSectors()
     const statusOptions = SearchOptionsHelp.statusOptions()
+    const [availableTags, setAvailableTags] = useState([])
 
     const getInit = useCallback(async () => {
         try {
@@ -42,6 +57,10 @@ const SymbolEdit = () => {
                 setSymbol(data)
                 if (data?.sector) {
                     setTags(SymbolHelp.sectorTagMap(data?.sector))
+                }
+                if (data?.SymbolTags) {
+                    const tempTags = data?.SymbolTags.map(item => item.tagName)
+                    setSelectedTags(tempTags);
                 }
             }
         } catch (error) {
@@ -187,17 +206,16 @@ const SymbolEdit = () => {
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
                                         <InputLabel htmlFor="sector-edit">分类</InputLabel>
-                                        <OutlinedInput
-                                            id="sector-edit"
-                                            type="text"
-                                            value={values.sector}
-                                            name="sector"
-                                            onBlur={handleBlur}
-                                            onChange={handleChange}
-                                            placeholder="sector"
-                                            fullWidth
-                                            error={Boolean(touched.sector && errors.sector)}
-                                        />
+                                        <Select id="sector"
+                                                name="sector"
+                                                fullWidth
+                                                value={values.sector}
+                                                onChange={handleChange}
+                                        >
+                                            {sectorOptions.map((option, index) =>
+                                                <MenuItem key={'sector-' + index} value={option}>{option}</MenuItem>
+                                            )}
+                                        </Select>
                                         {touched.sector && errors.sector && (
                                             <FormHelperText error id="standard-weight-helper-text-sector-edit">
                                                 {errors.sector}
@@ -205,6 +223,7 @@ const SymbolEdit = () => {
                                         )}
                                     </Stack>
                                 </Grid>
+                                <SectorEditWatcher setAvailableTags={setAvailableTags} />
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
                                         <InputLabel htmlFor="industry-edit">行业</InputLabel>
@@ -265,33 +284,32 @@ const SymbolEdit = () => {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Stack spacing={1}>
-                                        <InputLabel htmlFor="company">公司简介</InputLabel>
+                                        <InputLabel htmlFor="content">公司简介</InputLabel>
                                         <OutlinedInput
-                                            id="company"
+                                            id="content"
                                             type="text"
                                             value={values.content}
-                                            name="company"
-                                            inputProps={{'data-testid': 'note'}}
+                                            name="content"
                                             onChange={handleChange}
                                             placeholder="公司简介"
                                             multiline={true}
                                             rows={4}
                                             fullWidth
-                                            error={Boolean(touched.company && errors.company)}
+                                            error={Boolean(touched.content && errors.content)}
                                         />
-                                        {touched.company && errors.company && (
-                                            <FormHelperText error id="standard-weight-helper-text-company">
-                                                {errors.company}
+                                        {touched.content && errors.content && (
+                                            <FormHelperText error id="standard-weight-helper-text-content">
+                                                {errors.content}
                                             </FormHelperText>
                                         ) }
                                     </Stack>
                                 </Grid>
-
+                                {availableTags.length > 0 && (
                                 <Grid item xs={12}>
                                     <Stack direction="row" spacing={1} alignItems="right" justifyContent="space-between" sx={{ padding: 1 }}>
                                         <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
                                             <InputLabel id="status-label">标签</InputLabel>
-                                            {tags?.map(tag => (
+                                            {availableTags?.map(tag => (
                                                 <FormControlLabel
                                                     key={tag} // ✅ REQUIRED
                                                     control={
@@ -307,6 +325,7 @@ const SymbolEdit = () => {
                                         </Stack>
                                     </Stack>
                                 </Grid>
+                                )}
                                 {errors.submit && (
                                     <Grid item xs={12}>
                                         {errors.submit.map((errorMsg, index) => (
