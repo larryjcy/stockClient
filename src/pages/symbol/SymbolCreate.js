@@ -1,470 +1,367 @@
 import React, {useCallback, useEffect, useState} from 'react'
+import { useParams} from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+
 // third party
 import { Formik } from 'formik'
-import { SnackbarProvider, enqueueSnackbar } from 'notistack'
+import { useFormikContext } from 'formik'
+
 // material-ui
 import {
-    Button,
+    Button, Checkbox, FormControlLabel,
     FormHelperText,
     Grid,
-    InputAdornment,
-    InputLabel,
-    OutlinedInput,
+    InputLabel, MenuItem,
+    OutlinedInput, Select,
     Stack
 } from '@mui/material'
 
+import { SnackbarProvider, enqueueSnackbar } from 'notistack'
 // assets
-import SymbolApi from "../../api/SymbolApi"
+import MainCard from 'components/MainCard'
+import Breadcrumbs from 'components/@extended/Breadcrumbs'
+
 import {displayMultiError} from "../../lib/help"
-import Select from "@mui/material/Select"
-import MenuItem from "@mui/material/MenuItem"
-import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider"
-import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
-import {DatePicker} from "@mui/x-date-pickers/DatePicker"
+import SymbolApi from "../../api/SymbolApi"
+import SymbolEventApi from "../../api/SymbolEventApi";
+import SearchOptionsHelp from "../../lib/SearchOptionsHelp"
+import SymbolHelp from "../../lib/SymbolHelp";
 
-import SymbolHelp from "../../lib/SymbolHelp"
-
-import Breadcrumbs from "../../components/@extended/Breadcrumbs"
-
-import {STATUS_ACTIVE} from "../../constants/userConstants"
-
-const SymbolCreate = () => {
-    const navigate = useNavigate()
-
-    const [loading, setLoading] = useState(false)
-    const [statusOptions, setStatusOptions] = useState([])
-
-    const getInitData = useCallback(async () => {
-        setStatusOptions(SymbolHelp.statuses())
-        setLoading(true)
-    })
+function SectorEditWatcher({ setAvailableTags }) {
+    const { values, setFieldValue } = useFormikContext()
 
     useEffect(() => {
-        getInitData()
-    }, [loading])
+        const tags = SymbolHelp.sectorTagMap(values.sector) || []
+        setAvailableTags(tags)
+        setFieldValue('tags', [])
+    }, [values.sector])
 
+    return null
+}
+
+const SymbolCreate = () => {
+    const [symbol, setSymbol] = useState(null)
+    const [tags, setTags] = useState([])
+    const [selectedTags, setSelectedTags]  = useState([])
+    const sectorOptions = SymbolHelp.getSectors()
+    const statusOptions = SearchOptionsHelp.statusOptions()
+    const watchOptions = SearchOptionsHelp.watchOptions()
+
+    const [availableTags, setAvailableTags] = useState([])
+
+    // const getInit = useCallback(async () => {
+    //     try {
+    //         let data = await SymbolApi.detail(ticker)
+    //         if (data) {
+    //             setSymbol(data)
+    //             if (data?.sector) {
+    //                 setTags(SymbolHelp.sectorTagMap(data?.sector))
+    //             }
+    //             if (data?.SymbolTags) {
+    //                 const tempTags = data?.SymbolTags.map(item => item.tagName)
+    //                 setSelectedTags(tempTags);
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.log(error)
+    //     }
+    // }, [ticker])
+    //
+    // useEffect(() => {
+    //     getInit()
+    // }, [getInit])
+
+    const handleTagChange = (tag, checked) => {
+        setSelectedTags(prev => {
+            const nextTags = checked
+                ? prev.includes(tag) ? prev : [...prev, tag]
+                : prev.filter(s => s !== tag)
+
+            return nextTags
+        })
+    }
 
     return (
         <>
-            <Breadcrumbs custom heading='Create New Symbol' />
-            {(loading) &&
-            <Formik
-                initialValues={{
-                    ticker: null,
-                    name: null,
-                    exchange:null,
-                    sector: null,
-                    industry: null,
-                    market_cap: null,
-                    watch: null,
-                    status: STATUS_ACTIVE,
-                    submit: null
-                }}
-                // validationSchema={Yup.object().shape({
-                //     email: Yup.string().email('Must be a valid email').max(255).required('Email is required').nullable()
-                //     // password: Yup.string().max(255).required('Password is required')
-                // })}
-                onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
-                    const data = {
-                        ...values
-                    }
-                    let response = await SymbolApi.create(data)
-                    if (response && response.status === 200) {
-                        enqueueSnackbar('Symbol create success!', {
-                            variant: 'success',
-                            autoHideDuration: 3000,
-                            anchorOrigin: {horizontal: 'right', vertical: 'top'}
-                        })
-                        setTimeout(() => {
-                            navigate('/users')
-                        }, 2000)
-                    } else {
-                        response = displayMultiError(response)
-                        setStatus({success: false})
-                        setErrors({ submit: response.message })
-                        setSubmitting(false)
-                    }
-                }}
-            >
-                {({
-                      errors,
-                      handleBlur,
-                      handleChange,
-                      handleSubmit,
-                      touched,
-                      values }) => (
-                    <form noValidate onSubmit={handleSubmit}>
-                        <Grid container spacing={3}>
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="nickname-edit">Nick Name</InputLabel>
-                                    <OutlinedInput
-                                        id="nickname-edit"
-                                        type="text"
-                                        value={values.nickname}
-                                        name="nickname"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Enter Nick Name"
-                                        fullWidth
-                                        error={Boolean(touched.nickname && errors.nickname)}
-                                    />
-                                    {touched.nickname && errors.nickname && (
-                                        <FormHelperText error id="standard-weight-helper-text-nickname-edit">
-                                            {errors.nickname}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="firstName-edit">First Name</InputLabel>
-                                    <OutlinedInput
-                                        id="firstName-edit"
-                                        type="text"
-                                        value={values.firstName}
-                                        name="firstName"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Enter First Name"
-                                        fullWidth
-                                        error={Boolean(touched.firstName && errors.firstName)}
-                                    />
-                                    {touched.firstName && errors.firstName && (
-                                        <FormHelperText error id="standard-weight-helper-text-firstName-edit">
-                                            {errors.firstName}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="lastName-edit">Last Name</InputLabel>
-                                    <OutlinedInput
-                                        id="lastName-edit"
-                                        type="text"
-                                        value={values.lastName}
-                                        name="lastName"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Enter Last Name"
-                                        fullWidth
-                                        error={Boolean(touched.lastName && errors.lastName)}
-                                    />
-                                    {touched.lastName && errors.lastName && (
-                                        <FormHelperText error id="standard-weight-helper-text-lastName-edit">
-                                            {errors.lastName}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="dob-edit">D.O.B.</InputLabel>
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <DatePicker
-                                            format="YYYY-MM-DD"
-                                            defaultValue={values.dob}
-                                            slotProps={{
-                                                actionBar: {
-                                                    actions: ['clear']
-                                                }
-                                            }}
-                                            onChange={(newValue) => values.dob = (newValue)}
-                                        />
-                                    </LocalizationProvider>
-                                    {touched.dob && errors.dob && (
-                                        <FormHelperText error id="standard-weight-helper-text-dob-edit">
-                                            {errors.dob}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="email-edit">Email Address</InputLabel>
-                                    <OutlinedInput
-                                        id="email-edit"
-                                        type="email"
-                                        value={values.email}
-                                        name="email"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Enter email address"
-                                        fullWidth
-                                        error={Boolean(touched.email && errors.email)}
-                                    />
-                                    {touched.email && errors.email && (
-                                        <FormHelperText error id="standard-weight-helper-text-email-edit">
-                                            {errors.email}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="phone-edit">Mobile Phone</InputLabel>
-                                    <OutlinedInput
-                                        id="phone-edit"
-                                        type="text"
-                                        value={values.phone}
-                                        name="phone"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="phone"
-                                        fullWidth
-                                        error={Boolean(touched.phone && errors.phone)}
-                                    />
-                                    {touched.phone && errors.phone && (
-                                        <FormHelperText error id="standard-weight-helper-text-phone-edit">
-                                            {errors.phone}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
+            <Breadcrumbs custom heading='股票代码添加' />
+            <MainCard border={false} boxShadow>
+                    <Formik
+                        initialValues={{
+                            ticker: null,
+                            name: null,
+                            exchange: null,
+                            sector: null,
+                            industry: null,
+                            market_cap: null,
+                            watch: null,
+                            priority: null,
+                            status: null,
+                            volume: null,
+                            content: null,
+                            submit: null
+                        }}
+                        onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
+                            console.log(values);
+                            const data = {
+                                ...values
+                            }
+                            data.tags = selectedTags;
+                            data.company = {
+                                content: values.content,
+                            }
+                            console.log(values);
 
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="pwd-edit">Password</InputLabel>
-                                    <OutlinedInput
-                                        id="pwd-edit"
-                                        type="text"
-                                        value={values.pwd}
-                                        name="pwd"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Enter New Password"
-                                        fullWidth
-                                        autoComplete="off"
-                                        error={Boolean(touched.pwd && errors.pwd)}
-                                    />
-                                    {touched.pwd && errors.pwd && (
-                                        <FormHelperText error id="standard-weight-helper-text-pwd-edit">
-                                            {errors.pwd}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="hourlyRate-edit">Standard Hourly Rate</InputLabel>
-                                    <OutlinedInput
-                                        id="hourlyRate-edit"
-                                        type="text"
-                                        value={values.hourlyRate}
-                                        name="hourlyRate"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Standard Hourly Rate"
-                                        fullWidth
-                                        error={Boolean(touched.hourlyRate && errors.hourlyRate)}
-                                    />
-                                    {touched.hourlyRate && errors.hourlyRate && (
-                                        <FormHelperText error id="standard-weight-helper-text-hourlyRate-edit">
-                                            {errors.hourlyRate}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
+                            let response = await SymbolApi.create(data)
 
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="sessionRate-edit">Standard Session Rate</InputLabel>
-                                    <OutlinedInput
-                                        id="sessionRate-edit"
-                                        type="text"
-                                        value={values.sessionRate}
-                                        name="sessionRate"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Standard Session Rate"
-                                        fullWidth
-                                        error={Boolean(touched.sessionRate && errors.sessionRate)}
-                                    />
-                                    {touched.sessionRate && errors.sessionRate && (
-                                        <FormHelperText error id="standard-weight-helper-text-sessionRate-edit">
-                                            {errors.sessionRate}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
+                            if (response && response.status == 200) {
+                                enqueueSnackbar('添加成功!', {
+                                    variant: 'success',
+                                    autoHideDuration: 3000,
+                                    anchorOrigin: {horizontal: 'right', vertical: 'top'}
+                                })
+                                // setTimeout(() => {
+                                //     navigate('/symbol')
+                                // }, 2000)
+                            } else {
+                                response = displayMultiError(response)
+                                setStatus({success: false})
+                                setErrors({ submit: response.message })
+                                setSubmitting(false)
+                            }
+                        }}
+                    >
+                        {({
+                              errors,
+                              handleBlur,
+                              handleChange,
+                              handleSubmit,
+                              touched,
+                              values }) => (
+                            <form noValidate onSubmit={handleSubmit}>
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12}>
+                                        <Stack spacing={1}>
+                                            <InputLabel htmlFor="ticker-edit">代码</InputLabel>
+                                            <OutlinedInput
+                                                id="ticker-edit"
+                                                type="text"
+                                                value={values.ticker}
+                                                name="ticker"
+                                                onBlur={handleBlur}
+                                                onChange={handleChange}
+                                                placeholder="Enter ticker"
+                                                fullWidth
+                                                error={Boolean(touched.ticker && errors.ticker)}
+                                            />
+                                            {touched.ticker && errors.ticker && (
+                                                <FormHelperText error id="standard-weight-helper-text-ticker-edit">
+                                                    {errors.ticker}
+                                                </FormHelperText>
+                                            )}
+                                        </Stack>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Stack spacing={1}>
+                                            <InputLabel htmlFor="name-edit">名称</InputLabel>
+                                            <OutlinedInput
+                                                id="name-edit"
+                                                type="text"
+                                                value={values.name}
+                                                name="name"
+                                                onBlur={handleBlur}
+                                                onChange={handleChange}
+                                                placeholder="输入股票名称"
+                                                fullWidth
+                                                error={Boolean(touched.name && errors.name)}
+                                            />
+                                            {touched.name && errors.name && (
+                                                <FormHelperText error id="standard-weight-helper-text-name-edit">
+                                                    {errors.name}
+                                                </FormHelperText>
+                                            )}
+                                        </Stack>
+                                    </Grid>
 
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="commissionRate-edit">Standard Commission Rate</InputLabel>
-                                    <OutlinedInput
-                                        id="commissionRate-edit"
-                                        type="text"
-                                        endAdornment={<InputAdornment position="start">%</InputAdornment>}
-                                        value={values.commissionRate}
-                                        name="commissionRate"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Standard Commission Rate"
-                                        fullWidth
-                                        error={Boolean(touched.commissionRate && errors.commissionRate)}
-                                    />
-                                    {touched.commissionRate && errors.commissionRate && (
-                                        <FormHelperText error id="standard-weight-helper-text-commissionRate-edit">
-                                            {errors.commissionRate}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="commissionRate-edit">Standard Receipt Rate</InputLabel>
-                                    <OutlinedInput
-                                        id="receiptRate-edit"
-                                        type="text"
-                                        endAdornment={<InputAdornment position="start">%</InputAdornment>}
-                                        value={values.receiptRate}
-                                        name="receiptRate"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="% of Receipt Rate"
-                                        fullWidth
-                                        error={Boolean(touched.receiptRate && errors.receiptRate)}
-                                    />
-                                    {touched.receiptRate && errors.receiptRate && (
-                                        <FormHelperText error id="standard-weight-helper-text-receiptRate-edit">
-                                            {errors.receiptRate}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            {/**
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="referralRate-edit">Standard Referral Rate</InputLabel>
-                                    <OutlinedInput
-                                        id="referralRate-edit"
-                                        type="text"
-                                        value={values.referralRate}
-                                        name="referralRate"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Standard Referral Rate"
-                                        fullWidth
-                                        error={Boolean(touched.referralRate && errors.referralRate)}
-                                    />
-                                    {touched.referralRate && errors.referralRate && (
-                                        <FormHelperText error id="standard-weight-helper-text-referralRate-edit">
-                                            {errors.referralRate}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            */}
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="timesheetRate-edit">Timesheet Rate</InputLabel>
-                                    <OutlinedInput
-                                        id="timesheetRate-edit"
-                                        type="text"
-                                        value={values.timesheetRate}
-                                        name="timesheetRate"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="Timesheet Rate"
-                                        fullWidth
-                                        error={Boolean(touched.timesheetRate && errors.timesheetRate)}
-                                    />
-                                    {touched.timesheetRate && errors.timesheetRate && (
-                                        <FormHelperText error id="standard-weight-helper-text-timesheetRate-edit">
-                                            {errors.timesheetRate}
-                                        </FormHelperText>
-                                    )}
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="profitShareRate-edit">Profit Share Rate</InputLabel>
-                                    <OutlinedInput
-                                    id="profitShareRate-edit"
-                                    type="text"
-                                    endAdornment={<InputAdornment position="start">%</InputAdornment>}
-                                    value={values.profitShareRate}
-                                    name="profitShareRate"
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="e.g. 12 for 12%"
-                                    fullWidth
-                                    inputProps={{ inputMode: 'decimal' }}
-                                    />
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="monthlySalary-edit">Monthly Fixed Salary</InputLabel>
-                                    <OutlinedInput
-                                    id="monthlySalary-edit"
-                                    type="text"
-                                    startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                                    value={values.monthlySalary}
-                                    name="monthlySalary"
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="Enter $ per month"
-                                    fullWidth
-                                    inputProps={{ inputMode: 'decimal' }}
-                                    />
-                                </Stack>
-                            </Grid>
 
-                            <Grid item xs={12} md={6}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="dailySalary-edit">Daily Fixed Salary</InputLabel>
-                                    <OutlinedInput
-                                    id="dailySalary-edit"
-                                    type="text"
-                                    startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                                    value={values.dailySalary}
-                                    name="dailySalary"
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="Enter $ per day"
-                                    fullWidth
-                                    inputProps={{ inputMode: 'decimal' }}
-                                    />
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel id="status-label">Select Status</InputLabel>
-                                    <Select id="status"
-                                            name="status"
-                                            value={statusOptions.length > 0 ? values.status : ''}
-                                            onChange={handleChange}
-                                    >
-                                        {statusOptions.map((statusOption) =>
-                                            <MenuItem key={'statusOption' + statusOption.id} value={statusOption.id}>{statusOption.name}</MenuItem>
-                                        )}
-                                    </Select>
-                                </Stack>
-                            </Grid>
-                            {errors.submit && (
-                                <Grid item xs={12}>
-                                    {errors.submit.map((errorMsg, index) => (
-                                        <FormHelperText key={"errorMsg_" + index} error>{errorMsg}</FormHelperText>
-                                    ))}
+                                    <Grid item xs={12}>
+                                        <Stack spacing={1}>
+                                            <InputLabel htmlFor="exchange-edit">交易所</InputLabel>
+                                            <OutlinedInput
+                                                id="exchange-edit"
+                                                type="exchange"
+                                                value={values.exchange}
+                                                name="exchange"
+                                                onBlur={handleBlur}
+                                                onChange={handleChange}
+                                                placeholder="Enter exchange"
+                                                fullWidth
+                                                error={Boolean(touched.exchange && errors.exchange)}
+                                            />
+                                            {touched.exchange && errors.exchange && (
+                                                <FormHelperText error id="standard-weight-helper-text-exchange-edit">
+                                                    {errors.exchange}
+                                                </FormHelperText>
+                                            )}
+                                        </Stack>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Stack spacing={1}>
+                                            <InputLabel htmlFor="sector-edit">分类</InputLabel>
+                                            <Select id="sector"
+                                                    name="sector"
+                                                    fullWidth
+                                                    value={values.sector}
+                                                    onChange={handleChange}
+                                            >
+                                                {sectorOptions.map((option, index) =>
+                                                    <MenuItem key={'sector-' + index} value={option}>{option}</MenuItem>
+                                                )}
+                                            </Select>
+                                            {touched.sector && errors.sector && (
+                                                <FormHelperText error id="standard-weight-helper-text-sector-edit">
+                                                    {errors.sector}
+                                                </FormHelperText>
+                                            )}
+                                        </Stack>
+                                    </Grid>
+                                    <SectorEditWatcher setAvailableTags={setAvailableTags} />
+                                    <Grid item xs={12}>
+                                        <Stack spacing={1}>
+                                            <InputLabel htmlFor="industry-edit">行业</InputLabel>
+                                            <OutlinedInput
+                                                id="industry-edit"
+                                                type="text"
+                                                value={values.industry}
+                                                name="industry"
+                                                onBlur={handleBlur}
+                                                onChange={handleChange}
+                                                placeholder="Enter industry"
+                                                fullWidth
+                                                autoComplete="off"
+                                                error={Boolean(touched.pwd && errors.pwd)}
+                                            />
+                                            {touched.industry && errors.industry && (
+                                                <FormHelperText error id="standard-weight-helper-text-industry-edit">
+                                                    {errors.industry}
+                                                </FormHelperText>
+                                            )}
+                                        </Stack>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Stack spacing={1}>
+                                            <InputLabel htmlFor="marketCap-edit">市值</InputLabel>
+                                            <OutlinedInput
+                                                id="marketCap-edit"
+                                                type="text"
+                                                value={values.marketCap}
+                                                name="marketCap"
+                                                onBlur={handleBlur}
+                                                onChange={handleChange}
+                                                placeholder="Enter 市值"
+                                                fullWidth
+                                                autoComplete="off"
+                                                error={Boolean(touched.marketCap && errors.marketCap)}
+                                            />
+                                            {touched.marketCap && errors.marketCap && (
+                                                <FormHelperText error id="standard-weight-helper-text-marketCap-edit">
+                                                    {errors.marketCap}
+                                                </FormHelperText>
+                                            )}
+                                        </Stack>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Stack spacing={1}>
+                                            <InputLabel id="status-label">系统追踪</InputLabel>
+                                            <Select id="status"
+                                                    name="status"
+                                                    value={statusOptions.length > 0 ? values.status : ''}
+                                                    onChange={handleChange}
+                                            >
+                                                {statusOptions.map((statusOption) =>
+                                                    <MenuItem key={'statusOption' + statusOption.value} value={statusOption.value}>{statusOption.label}</MenuItem>
+                                                )}
+                                            </Select>
+                                        </Stack>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Stack spacing={1}>
+                                            <InputLabel id="watch-label">关注</InputLabel>
+                                            <Select id="watch"
+                                                    name="watch"
+                                                    value={watchOptions.length > 0 ? values.watch : ''}
+                                                    onChange={handleChange}
+                                            >
+                                                {watchOptions.map((watchOption) =>
+                                                    <MenuItem key={'watchOption' + watchOption.value} value={watchOption.value}>{watchOption.label}</MenuItem>
+                                                )}
+                                            </Select>
+                                        </Stack>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Stack spacing={1}>
+                                            <InputLabel htmlFor="content">公司简介</InputLabel>
+                                            <OutlinedInput
+                                                id="content"
+                                                type="text"
+                                                value={values.content}
+                                                name="content"
+                                                onChange={handleChange}
+                                                placeholder="公司简介"
+                                                multiline={true}
+                                                rows={4}
+                                                fullWidth
+                                                error={Boolean(touched.content && errors.content)}
+                                            />
+                                            {touched.content && errors.content && (
+                                                <FormHelperText error id="standard-weight-helper-text-content">
+                                                    {errors.content}
+                                                </FormHelperText>
+                                            ) }
+                                        </Stack>
+                                    </Grid>
+                                    {availableTags.length > 0 && (
+                                        <Grid item xs={12}>
+                                            <Stack direction="row" spacing={1} alignItems="right" justifyContent="space-between" sx={{ padding: 1 }}>
+                                                <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                                                    <InputLabel id="status-label">标签</InputLabel>
+                                                    {availableTags?.map(tag => (
+                                                        <FormControlLabel
+                                                            key={tag} // ✅ REQUIRED
+                                                            control={
+                                                                <Checkbox
+                                                                    checked={selectedTags.includes(tag)}
+                                                                    onChange={(e) => handleTagChange(tag, e.target.checked)}
+                                                                />
+                                                            }
+                                                            label={tag}
+                                                            labelPlacement="end"
+                                                        />
+                                                    ))}
+                                                </Stack>
+                                            </Stack>
+                                        </Grid>
+                                    )}
+                                    {errors.submit && (
+                                        <Grid item xs={12}>
+                                            {errors.submit.map((errorMsg, index) => (
+                                                <FormHelperText key={"errorMsg_" + index} error>{errorMsg}</FormHelperText>
+                                            ))}
+                                        </Grid>
+                                    )}
+                                    <Grid item xs={12}>
+                                        <Grid item xs={12}>
+                                            <Stack direction="row" spacing={4} justifyContent="left" alignItems="center">
+                                                <Button variant="contained" type="submit" size="medium" sx={{ textTransform: 'none' }}>
+                                                    保存
+                                                </Button>
+                                            </Stack>
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
-                            )}
-                            <Grid item xs={12}>
-                                <Grid item xs={12}>
-                                    <Stack direction="row" spacing={4} justifyContent="left" alignItems="center">
-                                        <Button variant="contained" type="submit" size="medium" sx={{ textTransform: 'none' }}>
-                                            Save
-                                        </Button>
-                                    </Stack>
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </form>
-                )}
-            </Formik>
-            }
+                            </form>
+                        )}
+                    </Formik>
+            </MainCard>
             <SnackbarProvider />
         </>
     )

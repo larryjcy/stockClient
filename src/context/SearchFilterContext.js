@@ -7,7 +7,8 @@ const SearchFilterContext = createContext(undefined)
 export const SearchFilterProvider = ({ children }) => {
     // State to store search results by type
     const [filterFieldOptions, setFilterFieldOptions] = useState({})
-
+    const [selectSectors, setSelectSectors] = useState([])
+    const [selectTags, setSelectTags] = useState([])
     const getContextFilterOption = (type) => filterFieldOptions[type] || null
 
     // Set results for a specific search type
@@ -18,11 +19,27 @@ export const SearchFilterProvider = ({ children }) => {
         }))
     }
 
+    const getContextSelectSectors = () => selectSectors || []
+    const setContextSelectSectors = (sectorList) => {
+        setSelectSectors(sectorList)
+    }
+
+    const getContextSelectTags= () => selectTags || []
+    const setContextSelectTags = (tagsList) => {
+        setSelectTags(tagsList)
+    }
+
     return (
         <SearchFilterContext.Provider value={{
                 filterFieldOptions,
+                selectSectors,
+                selectTags,
                 getContextFilterOption,
-                setContextFilterOption
+                setContextFilterOption,
+                getContextSelectSectors,
+                setContextSelectSectors,
+                getContextSelectTags,
+                setContextSelectTags
             }}
         >
             {children}

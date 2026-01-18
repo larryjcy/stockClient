@@ -3,7 +3,7 @@ import util from "../utils/util"
 import SymbolHelp from "../lib/SymbolHelp";
 export default {
     async create(symbol) {
-
+console.log(symbol)
         try {
             const url = '/symbol'
             return await axiosHttp.post(url, symbol)

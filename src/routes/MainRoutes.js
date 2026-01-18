@@ -69,7 +69,7 @@ const MainRoutes = {
       element: <AuthGuard navId={'user'} component={<SymbolCreate />} />
     },
     {
-      path: 'tradeView/:exchange/:ticker',
+      path: 'tradeView/:ticker',
       element: <AuthGuard navId={'user'} component={<TradingViewChart />} />
     },
     {

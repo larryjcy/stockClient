@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react'
-import { useParams} from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 
 // third party
@@ -24,9 +24,10 @@ import SymbolApi from "../../api/SymbolApi"
 import SearchOptionsHelp from "../../lib/SearchOptionsHelp"
 import TradingViewChart from  './TradingViewChart'
 const SymbolEdit = () => {
-    const { ticker, exchange } = useParams()
+    const { ticker } = useParams()
     const navigate = useNavigate()
-    const symbol = 'NASDAQ:AAPL';
+    const [searchParams] = useSearchParams();    // query params
+    const exchange = searchParams.get('exchange'); // string | null
     // const [symbol, setSymbol] = useState(null)
 
     // const getInit = useCallback(async () => {
@@ -48,7 +49,7 @@ const SymbolEdit = () => {
         <>
             <Breadcrumbs custom heading='Trade View' />
             <MainCard border={false} boxShadow>
-                {(symbol) &&
+                {(ticker) &&
                     <TradingViewChart
                         ticker={ticker}
                         exchange={exchange}

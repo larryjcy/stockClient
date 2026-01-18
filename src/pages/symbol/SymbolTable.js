@@ -38,7 +38,7 @@ import MainCard from 'components/MainCard'
 import ScrollX from 'components/ScrollX'
 import { TablePagination, HeaderSort } from 'components/third-party/react-table' // HeaderSort
 import { SnackbarProvider, enqueueSnackbar } from 'notistack'
-
+import { useSearchFilterContext } from '../../context/SearchFilterContext'
 import AddEventDialog from "./AddEventDialog";
 import {STATUS_ACTIVE, STATUS_DISABLE} from "../../constants/userConstants"
 import SymbolApi from "../../api/SymbolApi"
@@ -47,6 +47,15 @@ import SymbolHelp from '../../lib/SymbolHelp'
 import SymbolEventApi from "../../api/SymbolEventApi";
 
 const SymbolTable = () => {
+    const searchCacheKey= 'symbol_search';
+    const {
+        getContextFilterOption,
+        setContextFilterOption,
+        getContextSelectSectors,
+        setContextSelectSectors,
+        getContextSelectTags,
+        setContextSelectTags
+    } = useSearchFilterContext()
     const [filterOptions, setFilterOptions] = useState({
         status: STATUS_ACTIVE,
         keyword: ''
@@ -93,8 +102,37 @@ const SymbolTable = () => {
     }, [])
 
     useEffect(() => {
+        setContextFilterOption(searchCacheKey, filterOptions)
         getInit(filterOptions, sorting, pageIndex, pageSize)
     }, [getInit, filterOptions, sorting, pageIndex, pageSize])
+
+    useEffect(() => {
+        const historySearchData = getContextFilterOption(searchCacheKey)
+        if (historySearchData) {
+            setFilterOptions({ ...historySearchData })
+        } else {
+            setContextFilterOption(searchCacheKey, filterOptions)
+        }
+        const historySelectSectorData = getContextSelectSectors()
+        console.log(historySelectSectorData)
+        if (historySelectSectorData?.length > 0) {
+            setSelectedSectors(historySelectSectorData)
+        }
+        const historySelectTagData = getContextSelectTags()
+        console.log(historySelectTagData)
+        if (historySelectTagData?.length > 0) {
+            setSelectedTags(historySelectTagData)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+        setContextSelectTags(selectedTags);
+    }, [selectedTags])
+
+    useEffect(() => {
+        setContextSelectSectors(selectedSectors);
+    }, [selectedSectors])
 
     const handleStatusFilter = (event) => {
         // let temp = filterOptions
@@ -192,6 +230,31 @@ const SymbolTable = () => {
                 enableSorting: true
             },
             {
+                header: '行业',
+                accessorKey: 'industry',
+                enableSorting: false
+            },
+            {
+                header: '标签',
+                enableSorting: false,
+                cell: ({ row }) => {
+                    const tags = row.original?.SymbolTags ?? [];
+
+                    const tempTags = tags.length > 0
+                        ? tags.map(item => item.tagName).join(', ')
+                        : '';
+
+                    return (
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                            <Typography variant="subtitle1">
+                                {tempTags || '-'}
+                            </Typography>
+                        </Stack>
+                    );
+                }
+            },
+
+            {
                 header: '关注状态',
                 accessorKey: 'status',
                 cell: ({ getValue }) => (
@@ -217,7 +280,7 @@ const SymbolTable = () => {
                     return (
                         <Stack direction="row" spacing={1} alignItems="center">
                             <Tooltip title="Trade View 图">
-                                <IconButton color="primary" name="chart" component={Link} to={`/tradeView/${row.original.exchange}/${row.original.ticker}`} >
+                                <IconButton color="primary" name="chart" component={Link} to={`/tradeView/${row.original.ticker}?exchange=${row.original.exchange}`} >
                                     <QueryStatsIcon />
                                 </IconButton>
                             </Tooltip>
@@ -334,25 +397,25 @@ const SymbolTable = () => {
                         ))}
                     </Stack>
                 </Stack>
-                {selectedSectors.map(sector => (
-                <Stack direction="row" spacing={1} alignItems="right" justifyContent="space-between" sx={{ padding: 1 }}>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-                        <InputLabel sx={{ marginRight: 2 }}>{sector}:</InputLabel>
-                        {SymbolHelp.sectorTagMap(sector).map((tag, index) => (
-                            <FormControlLabel
-                                key={tag + '-' + index} // ✅ REQUIRED
-                                control={
-                                    <Checkbox
-                                        checked={selectedTags.includes(tag)}
-                                        onChange={(e) => handleTagChange(tag, e.target.checked)}
-                                    />
-                                }
-                                label={tag}
-                                labelPlacement="end"
-                            />
-                        ))}
+                {selectedSectors.map((sector, index) => (
+                    <Stack key={`sector-${sector}-tag`} direction="row" spacing={1} alignItems="right" justifyContent="space-between" sx={{ padding: 1 }}>
+                        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                            <InputLabel sx={{ marginRight: 2 }}>{sector}:</InputLabel>
+                            {SymbolHelp.sectorTagMap(sector).map((tag, index) => (
+                                <FormControlLabel
+                                    key={tag + '-' + index} // ✅ REQUIRED
+                                    control={
+                                        <Checkbox
+                                            checked={selectedTags.includes(tag)}
+                                            onChange={(e) => handleTagChange(tag, e.target.checked)}
+                                        />
+                                    }
+                                    label={tag}
+                                    labelPlacement="end"
+                                />
+                            ))}
+                        </Stack>
                     </Stack>
-                </Stack>
                 ))}
                 <ScrollX>
                     <Stack>

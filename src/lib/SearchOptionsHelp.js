@@ -78,5 +78,22 @@ export default {
                 label: '停止'
             }
         ]
+    },
+
+    watchOptions() {
+        return [
+            {
+                value: 0,
+                label: '显示所有'
+            },
+            {
+                value: 1,
+                label: '关注'
+            },
+            {
+                value: 2,
+                label: '取消关注'
+            }
+        ]
     }
 }

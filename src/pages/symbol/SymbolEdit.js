@@ -48,6 +48,7 @@ const SymbolEdit = () => {
     const [selectedTags, setSelectedTags]  = useState([])
     const sectorOptions = SymbolHelp.getSectors()
     const statusOptions = SearchOptionsHelp.statusOptions()
+    const watchOptions = SearchOptionsHelp.watchOptions()
     const [availableTags, setAvailableTags] = useState([])
 
     const getInit = useCallback(async () => {
@@ -96,7 +97,7 @@ const SymbolEdit = () => {
                         industry: symbol.industry,
                         market_cap: symbol.market_cap,
                         watch: symbol.watch,
-                        priority: symbol.priority,
+                        rate: symbol.rate,
                         status: symbol.status,
                         volume: symbol.volume,
                         content: symbol?.Company?.content,
@@ -278,6 +279,20 @@ const SymbolEdit = () => {
                                         >
                                             {statusOptions.map((statusOption) =>
                                                 <MenuItem key={'statusOption' + statusOption.value} value={statusOption.value}>{statusOption.label}</MenuItem>
+                                            )}
+                                        </Select>
+                                    </Stack>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Stack spacing={1}>
+                                        <InputLabel id="watch-label">关注</InputLabel>
+                                        <Select id="watch"
+                                                name="watch"
+                                                value={watchOptions.length > 0 ? values.watch : ''}
+                                                onChange={handleChange}
+                                        >
+                                            {watchOptions.map((watchOption) =>
+                                                <MenuItem key={'watchOption' + watchOption.value} value={watchOption.value}>{watchOption.label}</MenuItem>
                                             )}
                                         </Select>
                                     </Stack>

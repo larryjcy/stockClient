@@ -14,7 +14,10 @@ export default function TradingViewChart({
 
         // 清空旧 widget（安全）
         if (containerRef.current) containerRef.current.innerHTML = '';
-        const symbol = exchange + ':' + ticker
+        let symbol = ticker
+        if (exchange) {
+            symbol = exchange + ':' + ticker
+        }
 
         const script = document.createElement('script');
         script.src = 'https://s3.tradingview.com/tv.js';
